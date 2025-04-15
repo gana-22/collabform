@@ -1,0 +1,47 @@
+stateDiagram-v2
+    [*] --> LinkAccessed: Respondent accesses distribution link
+    LinkAccessed --> FormLoaded: Valid link
+    LinkAccessed --> InvalidAccess: Invalid/expired link
+    InvalidAccess --> [*]: Access denied
+    
+    FormLoaded --> FormViewing: Respondent views form
+    FormViewing --> FormFilling: Respondent begins filling form
+    FormFilling --> FormFilling: Edit responses
+    FormFilling --> ValidationFailed: Submit with invalid inputs
+    ValidationFailed --> FormFilling: Fix errors
+    
+    FormFilling --> SubmissionProcessing: Valid submission
+    SubmissionProcessing --> AnonymousStore: Anonymous response
+    SubmissionProcessing --> IdentifiedStore: Identified response
+    
+    AnonymousStore --> ResponseStored: Store in PostgreSQL
+    IdentifiedStore --> RespondentCreated: Create/update respondent details
+    RespondentCreated --> ResponseStored: Link response to respondent
+    
+    ResponseStored --> ConfirmationShown: Show confirmation to respondent
+    ConfirmationShown --> [*]: Process complete
+    
+    note right of LinkAccessed
+        Distribution link validated against
+        document_distributions entity
+    end note
+    
+    note right of FormLoaded
+        Form rendered from specific
+        document_versions snapshot
+    end note
+    
+    note right of ValidationFailed
+        Client-side and server-side
+        validation of form inputs
+    end note
+    
+    note right of AnonymousStore
+        Response stored without
+        respondent identification
+    end note
+    
+    note right of IdentifiedStore
+        Response linked to
+        respondent_details entity
+    end note

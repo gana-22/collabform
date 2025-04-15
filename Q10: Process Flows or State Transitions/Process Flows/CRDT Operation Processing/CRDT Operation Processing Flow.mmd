@@ -1,0 +1,67 @@
+flowchart TD
+    %% local document editing
+    Start([Client Editing]) --> ClientProcess[Apply to local document]
+    ClientProcess --> TransmitTrigger{Transmission 
+    Trigger?}
+    TransmitTrigger -->|No| Waiting[Continue Editing]
+    Waiting --> TransmitTrigger
+    
+    %% Event Parsing
+    TransmitTrigger -->|Yes
+    1. 200ms pause
+    2. 2s interval
+    3. 20 char threshold
+    | SendOp[Send CRDT Operation
+    with Version Vector]
+    
+    %% CRDT Operations
+    SendOp --> ServerReceive[Server Receives Operation]
+    ServerReceive --> IdempotencyCheck{Already
+    Processed?}
+    IdempotencyCheck -->|Yes| Skip[Skip Operation]
+    
+    %% Merge CRDT Operations
+    IdempotencyCheck -->|No| MergeOp[Merge CRDT Operation into
+    Server Document]
+    MergeOp --> AcquireLock[Acquire Distributed Lock]
+    AcquireLock --> StoreOp[Store Raw Operation
+    in MongoDB]
+    StoreOp --> UpdateDoc[Update Document
+    State in MongoDB]
+
+    %% Kafka Operations
+    UpdateDoc --> PublishKafka[Publish Operation
+    to Kafka]
+    PublishKafka --> ReleaseLock[Release Distributed Lock]
+    ReleaseLock --> Broadcast[Broadcast to Other Clients]
+    
+    %% Client Local Doc
+    Broadcast --> ClientReceive[Other Clients
+    Receive Operation]
+    ClientReceive --> ClientCheck{Already
+    Applied?}
+    ClientCheck -->|Yes| ClientSkip[Skip Operation]
+    ClientCheck -->|No| ClientApply[Apply Operation
+    to Local Document]
+    ClientApply --> RenderUpdate[Update UI Rendering]
+    
+    %% Kafka Operations
+    PublishKafka --> KafkaConsume[Kafka Consumer
+    Receives Operation]
+    KafkaConsume --> ConsumerCheck{Already
+    Processed?}
+    ConsumerCheck -->|Yes| ConsumerSkip[Skip Operation]
+    ConsumerCheck -->|No| ConsumerMerge[Merge Operation into
+    Consumer Document]
+    ConsumerMerge --> StoreVector[Store Version Vector
+    in MongoDB]
+
+    %% Document Snapshot
+    StoreVector --> CheckSnapshot{Snapshot
+    Interval?}
+    CheckSnapshot -->|No| ConsumerDone[Processing Complete]
+    CheckSnapshot -->|Yes| CreateSnapshot[Create Document Snapshot]
+    CreateSnapshot --> StoreSnapshot[Store Snapshot
+    in MongoDB]
+    StoreSnapshot --> CacheSnapshot[Cache Snapshot
+    in Redis]

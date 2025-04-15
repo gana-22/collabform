@@ -1,0 +1,23 @@
+flowchart TD
+    KafkaDown([Kafka Unavailable]) --> DetectFailure[Server Detects
+    Kafka Failure]
+    DetectFailure --> DirectRetrieval[Retrieve Pending Operations
+    Directly from MongoDB]
+    DirectRetrieval --> ApplyOperations[Apply Operations to
+    In-Memory Document State]
+    ApplyOperations --> StoreVector[Store Latest Version Vector
+    in MongoDB]
+    StoreVector --> Broadcasting[Broadcast CRDT Operations to all connected clients]
+    Broadcasting --> ContinueProcessing[Continue Processing
+    Without Kafka]
+    ContinueProcessing --> MonitorKafka{Kafka
+    Available?}
+    MonitorKafka -->|No| ContinueProcessing
+    MonitorKafka -->|Yes| ResumeKafka[Resume Normal
+    Kafka Processing]
+    ResumeKafka --> PublishBacklog[Publish Backlog
+    Operations to Kafka]
+    PublishBacklog --> CatchUp[Kafka Consumer
+    Processes Backlog]
+    CatchUp --> NormalOperation[Return to Normal
+    Operation]

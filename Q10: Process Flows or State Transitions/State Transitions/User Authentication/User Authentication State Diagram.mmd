@@ -1,0 +1,19 @@
+stateDiagram-v2
+    [*] --> Unauthenticated
+    Unauthenticated --> CredentialsSubmitted: Client submits credentials
+    CredentialsSubmitted --> AuthenticationFailed: Invalid credentials
+    CredentialsSubmitted --> Authenticated: Valid credentials
+    AuthenticationFailed --> Unauthenticated: Try again
+    
+    Authenticated --> TokenValidation: Request with JWT
+    TokenValidation --> PermissionCheck: Valid token
+    TokenValidation --> Unauthenticated: Expired/invalid token
+    
+    PermissionCheck --> Authorized: Has permission
+    PermissionCheck --> Unauthorized: Lacks permission
+    Unauthorized --> [*]: Access denied
+    
+    Authorized --> ResourceAccess: Access granted
+    ResourceAccess --> TokenValidation: Subsequent requests
+    
+    Authenticated --> Unauthenticated: Logout/Token expiry

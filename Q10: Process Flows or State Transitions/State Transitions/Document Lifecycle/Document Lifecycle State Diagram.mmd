@@ -1,0 +1,46 @@
+stateDiagram-v2
+    [*] --> Created: Client creates document
+    Created --> Editing: Document loaded for editing
+    Editing --> Editing: CRDT operations applied
+    Editing --> Versioned: Snapshot created
+    Versioned --> Editing: Continue editing
+    Versioned --> Distributed: Form distributed
+    Distributed --> ResponseCollection: Form accessed by respondents
+    ResponseCollection --> ResponseCollection: Responses submitted
+    ResponseCollection --> Closed: Form collection closed
+    Closed --> [*]
+
+    note right of Created
+        Initial document with metadata.
+        No content yet.
+    end note
+
+    note right of Editing
+        Multiple clients can edit simultaneously.
+        CRDT operations maintain consistency.
+        In-memory document state + MongoDB.
+    end note
+
+    note right of Versioned
+        Immutable snapshot created.
+        Stored in MongoDB.
+        Cached in Redis.
+    end note
+
+    note right of Distributed
+        Distribution links generated.
+        Form can be shared publicly or restricted.
+        Tied to specific document version.
+    end note
+
+    note right of ResponseCollection
+        Respondents submit answers.
+        Data stored in PostgreSQL.
+        Analytics available to form owner.
+    end note
+
+    note right of Closed
+        No more responses accepted.
+        Results finalized.
+        Historical data maintained.
+    end note

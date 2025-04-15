@@ -1,0 +1,16 @@
+flowchart TD
+    Start([Server Failure]) --> NewServer[New Server Instance Started]
+    NewServer --> GetVector[Retrieve Last Processed
+    Version Vector from MongoDB]
+    GetVector --> GetSnapshot[Retrieve Latest Document
+    Snapshot from MongoDB]
+    GetSnapshot --> GetOperations[Fetch Pending Operations
+    Since Last Version]
+    GetOperations --> ApplyOps[Apply Operations
+    in Causal Order]
+    ApplyOps --> ConsistencyCheck{Document
+    State Consistent?}
+    ConsistencyCheck -->|No| ErrorRecovery[Initiate Error Recovery]
+    ConsistencyCheck -->|Yes| Ready[Server Ready
+    to Handle Requests]
+    Ready --> ResumeService[Resume Normal Service]
