@@ -76,7 +76,7 @@ Details how services communicate with each other and how the client application 
 
 Details how system design will scale to accommodate increased load, especially during peak usage times and what strategies would be employed to ensure smooth performance even with millions of simultaneous users.
 
-- [System Scalability Documentation (PDF)](Q6%3A%20System%Scalability/System%Scalability.pdf)
+- [System Scalability Documentation (PDF)](Q6%3A%20System%20Scalability/System%20Scalability.pdf)
 
 ### 7. Real-Time Collaboration
 
